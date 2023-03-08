@@ -30,7 +30,7 @@ class Player(pg.sprite.Sprite):
         self.frame_width = frame_width
         self.frame_height = frame_height
 
-        self.sheet = pg.image.load("maleBase/maleBase/full/advnt_full.png")
+        self.sheet = pg.image.load("GameMap/maleBase/maleBase/full/advnt_full.png")
         self.sheet.set_clip(pg.Rect(0, 0, 32, 64))
         self.image = self.sheet.subsurface(self.sheet.get_clip())
 
@@ -46,13 +46,16 @@ class Player(pg.sprite.Sprite):
         self.body.userData = self
 
         self.fixture = self.body.CreateFixture(shape=b2PolygonShape(box=(frame_width / 2, frame_height / 2)),
-                                               friction=0,
+                                               friction=.5,
                                                restitution=.5,
                                                density=1)
 
         self.is_moving = False
         self.on_ground = False
         self.direction = ""
+
+        self.speed = 500
+        self.jumpForce = -100
 
     def update(self, dt):
         if self.is_moving:
@@ -71,17 +74,17 @@ class Player(pg.sprite.Sprite):
         if self.on_ground == True:
             self.body.linearVelocity = b2Vec2(self.body.linearVelocity.x, 0)
             if self.direction == "up":
-                self.body.linearVelocity = b2Vec2(self.body.linearVelocity.x, -200)
+                self.body.linearVelocity = b2Vec2(self.body.linearVelocity.x, self.jumpForce)
             elif self.direction == "left":
-                self.body.ApplyLinearImpulse(b2Vec2(-1000, 0), self.body.worldCenter, True)
+                self.body.ApplyLinearImpulse(b2Vec2(-self.speed, 0), self.body.worldCenter, True)
             elif self.direction == "right":
-                self.body.ApplyLinearImpulse(b2Vec2(1000, 0), self.body.worldCenter, True)
+                self.body.ApplyLinearImpulse(b2Vec2(self.speed, 0), self.body.worldCenter, True)
 
         if self.on_ground == False:
             if self.direction == "left":
-                self.body.ApplyLinearImpulse(b2Vec2(-1000, 0), self.body.worldCenter, True)
+                self.body.ApplyLinearImpulse(b2Vec2(-self.speed, 0), self.body.worldCenter, True)
             elif self.direction == "right":
-                self.body.ApplyLinearImpulse(b2Vec2(1000, 0), self.body.worldCenter, True)
+                self.body.ApplyLinearImpulse(b2Vec2(self.speed, 0), self.body.worldCenter, True)
 
 
         self.rect.center = self.body.position.x, self.body.position.y
@@ -103,59 +106,10 @@ class Player(pg.sprite.Sprite):
         self.is_moving = True
         self.direction = "right"
 
-class ContactListener(b2ContactListener):
-    def __init__(self, player, world):
-        super().__init__()
-        self.player = player
-        self.impulse = None
-        self.world = world
-        self.contacts = []
+class Tile(pg.sprite.Sprite):
+    def __init__(self, pos, surf, groups):
+        super().__init__(groups)
+        self.image = surf
+        self.rect = self.image.get_rect(topleft=pos)
 
-    # def BeginContact(self, contact):
-    #     print("Contact detected")
-    #     fixture_a = contact.fixtureA
-    #     print(fixture_a, "a")
-    #     fixture_b = contact.fixtureB
-    #     print(fixture_b, "a")
-    #     # Check if the player has collided with the ground
-    #     if self.player in [fixture_a.body.userData, fixture_b.body.userData]:
-    #         self.player.on_ground = True
-    #         self.contacts.append(contact)
-    #
-    #         # Get the normal vector of the collision
-    #         normal = contact.normal
-    #
-    #         # Calculate the impulse required to stop the player from falling through the ground
-    #         self.impulse = self.player.body.mass * -self.world.gravity.y * normal / (normal.dot(normal) + 0.1)
-    #
-    #         # Add a small y offset to player position to prevent sticking to the ground
-    #         y_offset = 0.01
-    #         if contact.fixtureA.body.userData == self.player:
-    #             self.player.body.position.y += y_offset
-    #         else:
-    #             self.player.body.position.y -= y_offset
-    #
-    # def EndContact(self, contact):
-    #     fixture_a = contact.fixtureA
-    #     fixture_b = contact.fixtureB
-    #     # Check if the player has left the ground
-    #     if self.player in [fixture_a.body.userData, fixture_b.body.userData]:
-    #         self.player.on_ground = False
-    #         self.contacts.remove(contact)
-    #         self.impulse = None
-    #
-    # def update(self):
-    #     for contact in self.contacts:
-    #         print("here 1")
-    #         # handle collision between player and ground
-    #         if contact.fixtureA.body.userData == self.player or contact.fixtureB.body.userData == self.player:
-    #             self.BeginContact(contact)
-    #
-    # # def has_contact(self, body1, body2):
-    # #     for contact in self.contacts:
-    # #         fixture_a = contact.fixtureA
-    # #         fixture_b = contact.fixtureB
-    # #         if (fixture_a.body.userData == body1 and fixture_b.body.userData == body2) or (
-    # #                 fixture_a.body.userData == body2 and fixture_b.body.userData == body1):
-    # #             return True
-    # #     return False
+

@@ -1,8 +1,22 @@
 import pygame as pg
 from Box2D import *
+import pytmx
+import os
 from Bodies import Player
 from Bodies import Ground
-from Bodies import ContactListener
+from Bodies import Tile
+
+class Camera:
+    def __init__(self, width, height):
+        self.rect = pg.Rect(0, 0, width, height)
+
+    def apply(self, target):
+        return target.rect.move(self.rect.topleft)
+
+    def update(self, target):
+        x = -target.rect.x + int(screen.get_width() / 2)
+        y = -target.rect.y + int(screen.get_height() / 2)
+        self.rect = pg.Rect(x, y, self.rect.width, self.rect.height)
 
 pg.init()
 
@@ -10,18 +24,37 @@ b2w = 100
 
 screen = pg.display.set_mode((1024, 768))
 
+script_dir = os.path.dirname(os.path.abspath(__file__))
+map_path = os.path.join(script_dir, "GameMap", "GameMap.tmx")
+tiled_map = pytmx.util_pygame.load_pygame(map_path)
+
+
 world = b2World(gravity = (0,100), doSleep=True)
 ground = Ground(1,1,25,.5, world)
-player = Player(100,500,32,64, world)
-
-contact_listener = ContactListener(player, world)
-world.contactListener = contact_listener
+player = Player(50,150,32,64, world)
 
 groundGroup = pg.sprite.Group()
 groundGroup.add(ground)
-
 gamer = pg.sprite.Group()
 gamer.add(player)
+
+tile_group = pg.sprite.Group()
+non_pys_group = pg.sprite.Group()
+
+
+for layer in tiled_map.layers:
+    # if layer.name in ('player'):
+    if layer.name in ('Physical for player and ball', 'physical for ball', 'physical for player'):
+        for x, y, surf in layer.tiles():
+            pos = (x * tiled_map.tilewidth, y * tiled_map.tileheight)
+            Tile(pos=pos, surf=surf, groups=tile_group)
+
+for layer in tiled_map.layers:
+    # if layer.name in ('player'):
+    if layer.name in ('stairs'):
+        for x, y, surf in layer.tiles():
+            pos = (x * tiled_map.tilewidth, y * tiled_map.tileheight)
+            Tile(pos=pos, surf=surf, groups=non_pys_group)
 
 collided = pg.sprite.spritecollide(player, groundGroup, False)
 clock = pg.time.Clock()
@@ -38,65 +71,37 @@ while running:
                 player.move_right()
             elif event.key == pg.K_SPACE:
                 player.jump()
-        # elif event.type == pg.KEYUP:
-        #     player.is_moving = False
 
-    if player.rect.colliderect(ground.rect):
-        player.on_ground = True
+    camera_x = player.rect.x - screen.get_width() / 2
+    camera_y = player.rect.y - screen.get_height() / 2
 
-    if not player.rect.colliderect(ground.rect):
+    # Ensure the camera does not go off the edges of the map
+    camera_x = max(camera_x, 0)
+    camera_x = min(camera_x, tiled_map.width * tiled_map.tilewidth - screen.get_width())
+    camera_y = max(camera_y, 0)
+    camera_y = min(camera_y, tiled_map.height * tiled_map.tileheight - screen.get_height())
+
+    for tile in tile_group:
+        if tile.image != 0:
+            if player.rect.colliderect(tile.rect):
+                player.on_ground = True
+                break
+    else:
         player.on_ground = False
 
-
-
-        # difference = ground.rect.top - player.rect.bottom
-
-        # # Check if the player is intersecting with the ground
-        # if difference >= 0:
-        #     # Move the player's sprite up by the difference amount plus a small offset value
-        #     offset = 2
-        #     player.rect.move_ip(0, difference + offset)
-        #
-        #     # Update the player's Box2D body position to match the new sprite position
-        #     player.body.position = (player.rect.centerx / b2w, player.rect.centery / b2w)
-
-    # if contact_listener.has_contact("player", "ground"):d
-    #     print("Player collided with ground")
-        # normal = contact_listener.normal
-        # impulse = player.body.mass * -world.gravity.y * normal / (normal.dot(normal) + 0.1)
-        # player.body.ApplyLinearImpulse(impulse, player.body.worldCenter, True)
-        # player.on_ground = True
 
     dt = clock.tick(60) / 1000.0
     world.Step(dt, 6, 2)
 
-    # contact_listener.update()
-
-    # for contact in contact_listener.contacts:
-    #     print("here 2")
-    #     if ground in [contact.fixtureA.body.userData, contact.fixtureB.body.userData]:
-    #         player.on_ground = True
-    #         print("here 1")
-    #
-    #         # Get the normal vector of the collision
-    #         normal = contact.normal
-    #
-    #         # Calculate the impulse required to stop the player from falling through the ground
-    #         impulse = player.body.mass * -world.gravity.y * normal / (normal.dot(normal) + 0.1)
-    #
-    #         # Apply the impulse to the player's body
-    #         player.body.ApplyLinearImpulse(impulse, player.body.worldCenter, True)
-
     screen.fill((0, 0, 0))
-    screen.blit(ground.image, ground.rect)
     gamer.update(dt)
-    # ground.update(dt)
-    # groundGroup.draw(screen)
-    # gamer.draw(screen)
-
-    # screen.blit(ground.image, ground.rect)
-    screen.blit(player.image, player.rect)
-
+    for tile in tile_group:
+        if tile.image != 0:
+            screen.blit(tile.image, (tile.rect.x - camera_x, tile.rect.y - camera_y))
+    for tile in non_pys_group:
+        if tile.image != 0:
+            screen.blit(tile.image, (tile.rect.x - camera_x, tile.rect.y - camera_y))
+    screen.blit(player.image, (player.rect.x - camera_x, player.rect.y - camera_y))
 
     pg.display.update()
     pg.display.flip()
