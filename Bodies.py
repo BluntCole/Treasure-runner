@@ -4,19 +4,6 @@ import math
 
 b2w = 100
 
-class Ground(pg.sprite.Sprite):
-    def __init__(self, x, y, w, h, world):
-        super().__init__()
-        self.body = world.CreateStaticBody(position=(x, y))
-        self.image = pg.Surface((2*w*b2w, 2*h*b2w))
-        self.image.fill((0, 255, 0,))
-        self.rect = self.image.get_rect()
-        self.rect.center = self.body.position.x * b2w, 768 - self.body.position.y * b2w
-        self.fixture = self.body.CreateFixture(shape=b2PolygonShape(box=(w, h)),
-                                               friction=0,
-                                               restitution=.9,
-                                               density=100)
-
 class Player(pg.sprite.Sprite):
     def __init__(self, x, y, frame_width, frame_height, world):
         super().__init__()
@@ -55,7 +42,7 @@ class Player(pg.sprite.Sprite):
         self.direction = ""
 
         self.speed = 500
-        self.jumpForce = -100
+        self.jumpForce = -75
 
     def update(self, dt):
         if self.is_moving:
@@ -90,19 +77,14 @@ class Player(pg.sprite.Sprite):
         self.rect.center = self.body.position.x, self.body.position.y
 
     def jump(self):
-        # if self.on_ground:
-            # self.body.ApplyLinearImpulseToCenter((0, 200), True)
-        # self.on_ground = False
+        self.is_moving = True
         self.direction = "up"
 
     def move_left(self):
-        # self.body.ApplyLinearImpulse(b2Vec2(-2, 0), self.body.worldCenter, True)
         self.is_moving = True
-        print(self.on_ground)
         self.direction = "left"
 
     def move_right(self):
-        # self.body.ApplyLinearImpulse(b2Vec2(2, 0), self.body.worldCenter, True)
         self.is_moving = True
         self.direction = "right"
 

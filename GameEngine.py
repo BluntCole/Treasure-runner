@@ -3,7 +3,6 @@ from Box2D import *
 import pytmx
 import os
 from Bodies import Player
-from Bodies import Ground
 from Bodies import Tile
 
 class Camera:
@@ -30,33 +29,45 @@ tiled_map = pytmx.util_pygame.load_pygame(map_path)
 
 
 world = b2World(gravity = (0,100), doSleep=True)
-ground = Ground(1,1,25,.5, world)
 player = Player(50,150,32,64, world)
 
-groundGroup = pg.sprite.Group()
-groundGroup.add(ground)
 gamer = pg.sprite.Group()
 gamer.add(player)
 
 tile_group = pg.sprite.Group()
 non_pys_group = pg.sprite.Group()
+win_group = pg.sprite.Group()
+lose_group = pg.sprite.Group()
 
 
 for layer in tiled_map.layers:
     # if layer.name in ('player'):
-    if layer.name in ('Physical for player and ball', 'physical for ball', 'physical for player'):
+    if layer.name in ('Physical for player and ball', 'physical for player'):
         for x, y, surf in layer.tiles():
             pos = (x * tiled_map.tilewidth, y * tiled_map.tileheight)
             Tile(pos=pos, surf=surf, groups=tile_group)
 
 for layer in tiled_map.layers:
     # if layer.name in ('player'):
-    if layer.name in ('stairs'):
+    if layer.name in ('stairs', 'decorate', 'wall'):
         for x, y, surf in layer.tiles():
             pos = (x * tiled_map.tilewidth, y * tiled_map.tileheight)
             Tile(pos=pos, surf=surf, groups=non_pys_group)
 
-collided = pg.sprite.spritecollide(player, groundGroup, False)
+for layer in tiled_map.layers:
+    # if layer.name in ('player'):
+    if layer.name in ('lose'):
+        for x, y, surf in layer.tiles():
+            pos = (x * tiled_map.tilewidth, y * tiled_map.tileheight)
+            Tile(pos=pos, surf=surf, groups=lose_group)
+
+for layer in tiled_map.layers:
+    # if layer.name in ('player'):
+    if layer.name in ('win'):
+        for x, y, surf in layer.tiles():
+            pos = (x * tiled_map.tilewidth, y * tiled_map.tileheight)
+            Tile(pos=pos, surf=surf, groups=win_group)
+
 clock = pg.time.Clock()
 running = True
 
@@ -89,21 +100,44 @@ while running:
     else:
         player.on_ground = False
 
+    for tile in win_group:
+        if tile.image != 0:
+            if player.rect.colliderect(tile.rect):
+                print("you win")
+                pg.quit()
+
+    for tile in lose_group:
+        if tile.image != 0:
+            if player.rect.colliderect(tile.rect):
+                print("you lose")
+                pg.quit()
 
     dt = clock.tick(60) / 1000.0
     world.Step(dt, 6, 2)
 
-    screen.fill((0, 0, 0))
+    # screen.fill((0, 0, 0))
     gamer.update(dt)
-    for tile in tile_group:
+    for tile in lose_group:
         if tile.image != 0:
             screen.blit(tile.image, (tile.rect.x - camera_x, tile.rect.y - camera_y))
     for tile in non_pys_group:
         if tile.image != 0:
             screen.blit(tile.image, (tile.rect.x - camera_x, tile.rect.y - camera_y))
+    for tile in tile_group:
+        if tile.image != 0:
+            screen.blit(tile.image, (tile.rect.x - camera_x, tile.rect.y - camera_y))
+    for tile in win_group:
+        if tile.image != 0:
+            screen.blit(tile.image, (tile.rect.x - camera_x, tile.rect.y - camera_y))
+    for tile in lose_group:
+        if tile.image != 0:
+            screen.blit(tile.image, (tile.rect.x - camera_x, tile.rect.y - camera_y))
+
     screen.blit(player.image, (player.rect.x - camera_x, player.rect.y - camera_y))
+
 
     pg.display.update()
     pg.display.flip()
 
 pg.quit()
+
