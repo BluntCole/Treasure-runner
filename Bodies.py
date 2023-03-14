@@ -34,15 +34,15 @@ class Player(pg.sprite.Sprite):
 
         self.fixture = self.body.CreateFixture(shape=b2PolygonShape(box=(frame_width / 2, frame_height / 2)),
                                                friction=.5,
-                                               restitution=.5,
-                                               density=1)
+                                               restitution=0,
+                                               density=.8)
 
         self.is_moving = False
         self.on_ground = False
         self.direction = ""
 
-        self.speed = 500
-        self.jumpForce = -75
+        self.speed = 550
+        self.jumpForce = -80
 
     def update(self, dt):
         if self.is_moving:
@@ -72,7 +72,6 @@ class Player(pg.sprite.Sprite):
                 self.body.ApplyLinearImpulse(b2Vec2(-self.speed, 0), self.body.worldCenter, True)
             elif self.direction == "right":
                 self.body.ApplyLinearImpulse(b2Vec2(self.speed, 0), self.body.worldCenter, True)
-
 
         self.rect.center = self.body.position.x, self.body.position.y
 

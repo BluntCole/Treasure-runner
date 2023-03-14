@@ -1,4 +1,5 @@
 import pygame as pg
+from pygame import mixer
 from Box2D import *
 import pytmx
 import os
@@ -19,6 +20,8 @@ class Camera:
 
 pg.init()
 
+mixer.init()
+
 b2w = 100
 
 screen = pg.display.set_mode((1024, 768))
@@ -27,8 +30,9 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 map_path = os.path.join(script_dir, "GameMap", "GameMap.tmx")
 tiled_map = pytmx.util_pygame.load_pygame(map_path)
 
-
-world = b2World(gravity = (0,100), doSleep=True)
+wgravity = (0,100)
+world = b2World(wgravity, doSleep=True)
+print(wgravity)
 player = Player(50,150,32,64, world)
 
 gamer = pg.sprite.Group()
@@ -38,6 +42,15 @@ tile_group = pg.sprite.Group()
 non_pys_group = pg.sprite.Group()
 win_group = pg.sprite.Group()
 lose_group = pg.sprite.Group()
+
+# cam_group = pg.sprite.Group()
+# cam_group.add(tile_group, non_pys_group, win_group, lose_group)
+
+# Load the background music
+mixer.music.load('music.mp3')
+
+# Play the music on loop
+mixer.music.play(-1)
 
 
 for layer in tiled_map.layers:
@@ -138,6 +151,8 @@ while running:
 
     pg.display.update()
     pg.display.flip()
+
+mixer.music.stop()
 
 pg.quit()
 
