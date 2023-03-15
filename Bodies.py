@@ -35,13 +35,13 @@ class Player(pg.sprite.Sprite):
         self.fixture = self.body.CreateFixture(shape=b2PolygonShape(box=(frame_width / 2, frame_height / 2)),
                                                friction=.5,
                                                restitution=.5,
-                                               density=1)
+                                               density=.5)
 
         self.is_moving = False
         self.on_ground = False
         self.direction = ""
 
-        self.speed = 500
+        self.speed = 700
         self.jumpForce = -75
 
     def update(self, dt):
