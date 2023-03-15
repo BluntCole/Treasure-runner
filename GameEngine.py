@@ -1,6 +1,7 @@
 import pygame as pg
 from Box2D import *
 import pytmx
+from pygame import mixer
 import os
 from Bodies import Player
 from Bodies import Tile
@@ -18,6 +19,10 @@ class Camera:
         self.rect = pg.Rect(x, y, self.rect.width, self.rect.height)
 
 pg.init()
+mixer.init()
+
+mixer.music.load('path/to/music/file.mp3')
+mixer.music.play(-1)
 
 b2w = 100
 
@@ -138,6 +143,8 @@ while running:
 
     pg.display.update()
     pg.display.flip()
+
+mixer.music.stop()
 
 pg.quit()
 
