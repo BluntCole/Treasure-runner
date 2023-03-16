@@ -32,7 +32,7 @@ tiled_map = pytmx.util_pygame.load_pygame(map_path)
 
 wgravity = (0,100)
 world = b2World(wgravity, doSleep=True)
-print(wgravity)
+# print(wgravity)
 player = Player(50,150,32,64, world)
 
 gamer = pg.sprite.Group()
