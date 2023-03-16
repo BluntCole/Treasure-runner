@@ -30,15 +30,20 @@ class Ball:
         ball_position = self.body.position
         ball_screen_pos = (int(ball_position[0]), int(screen_height - ball_position[1]))
         pg.draw.circle(screen, (50, 50, 50), ball_screen_pos, self.radius)
+        rect_pos = (int(ball_position[0] - self.radius), int(screen_height - ball_position[1] - self.radius))
+        rect_size = (self.radius * 2, self.radius * 2)
+        pg.draw.rect(screen, (255, 0, 0), pg.Rect(rect_pos, rect_size), 1)
 
     def update(self):
-        if self.on_ground == False:
-            self.body.ApplyLinearImpulse(b2Vec2(-self.speed, -10000), self.body.worldCenter, True)
-            print(self.on_ground, "here 1")
+        #self.body.ApplyLinearImpulse(b2Vec2(-self.speed, -2000), self.body.worldCenter, True)
         if self.on_ground == True:
-            self.body.ApplyLinearImpulse(b2Vec2(-self.speed, 0), self.body.worldCenter, True)
-            self.on_ground = False
-            print(self.on_ground, "here 2")
+            self.body.ApplyLinearImpulse(b2Vec2(-self.speed, 1000), self.body.worldCenter, True)
+            # print(self.on_ground, "here 2")
+        if self.on_ground == False:
+            self.body.ApplyLinearImpulse(b2Vec2(-self.speed, -1500), self.body.worldCenter, True)
+            print(self.on_ground, "here 1")
+
+        # self.rect.center = self.body.position.x, self.body.position.y
 
 
 class Player(pg.sprite.Sprite):
@@ -109,7 +114,6 @@ class Player(pg.sprite.Sprite):
                 self.body.ApplyLinearImpulse(b2Vec2(-self.speed, 0), self.body.worldCenter, True)
             elif self.direction == "right":
                 self.body.ApplyLinearImpulse(b2Vec2(self.speed, 0), self.body.worldCenter, True)
-
 
         self.rect.center = self.body.position.x, self.body.position.y
 

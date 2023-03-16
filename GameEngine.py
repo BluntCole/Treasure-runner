@@ -39,7 +39,7 @@ player = Player(50, 150, 32, 64, world)
 gamer = pg.sprite.Group()
 gamer.add(player)
 
-ball = Ball(world, 150, 700, 20)
+ball = Ball(world, 150, 700, 30)
 # baller = pg.sprite.Group()
 # baller.add(ball)
 
@@ -190,6 +190,7 @@ while running:
     screen.blit(player.image, (player.rect.x - camera_x, player.rect.y - camera_y))
 
     ball.draw(screen, screen.get_height())
+
     pg.display.update()
     pg.display.flip()
 

@@ -1,5 +1,5 @@
-import pygame as pg
-from Box2D import *
+# import pygame as pg
+# from Box2D import *
 
 class Box2DUpdater:
     def __init__(self, world, timeStep=1.0/60, vel_iters=6, pos_iters=2):
