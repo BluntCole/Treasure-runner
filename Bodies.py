@@ -5,8 +5,11 @@ import math
 
 b2w = 100
 
-class Ball:
-    def __init__(self, world, x, y, radius, density=1, friction=0.3, restitution=0.5):
+class Ball(pg.sprite.Sprite):
+    def __init__(self, world, x, y, radius, density=1, friction=0.3, restitution=.5):
+
+        self.x = x
+        self.y = y
         # Set up the physical properties of the ball
         self.radius = radius
         self.density = density
@@ -19,31 +22,36 @@ class Ball:
         self.fixture = self.body.CreateFixture(shape=self.shape, density=density,
                                                friction=friction, restitution=restitution)
 
-        self.rect = pg.Rect(x - radius, y - radius, 2*radius, 2*radius)
+        self.rect = pg.Rect(x - radius, y - radius , radius*2, radius*2)
 
         self.on_ground = False
+        self.roll = False
+        self.body.gravityScale = 0
 
-        self.speed = -1000
+        self.speed = 700
 
-    def draw(self, screen, screen_height):
-        # Draw the ball on the screen
+    def draw(self, screen, camera_x, camera_y):
+        # Draw the ball on the screen, adjusted for the camera position
         ball_position = self.body.position
-        ball_screen_pos = (int(ball_position[0]), int(screen_height - ball_position[1]))
+        ball_screen_pos = (int(ball_position[0] - camera_x), int(ball_position[1] - camera_y))
         pg.draw.circle(screen, (50, 50, 50), ball_screen_pos, self.radius)
-        rect_pos = (int(ball_position[0] - self.radius), int(screen_height - ball_position[1] - self.radius))
-        rect_size = (self.radius * 2, self.radius * 2)
-        pg.draw.rect(screen, (255, 0, 0), pg.Rect(rect_pos, rect_size), 1)
+
+
 
     def update(self):
-        #self.body.ApplyLinearImpulse(b2Vec2(-self.speed, -2000), self.body.worldCenter, True)
-        if self.on_ground == True:
-            self.body.ApplyLinearImpulse(b2Vec2(-self.speed, 1000), self.body.worldCenter, True)
-            # print(self.on_ground, "here 2")
-        if self.on_ground == False:
-            self.body.ApplyLinearImpulse(b2Vec2(-self.speed, -1500), self.body.worldCenter, True)
-            print(self.on_ground, "here 1")
+        if self.roll == False:
+            self.body.gravityScale = 0
+        else:
+            self.body.gravityScale = 1
+            if self.on_ground == True:
+                self.body.linearVelocity = b2Vec2(self.speed, 0)
+                print(self.on_ground, "here 2")
+                self.on_ground = False
+            if self.on_ground == False:
+                self.body.ApplyLinearImpulse(b2Vec2(self.speed, 1000), self.body.worldCenter, True)
+                print(self.on_ground, "here 1")
 
-        # self.rect.center = self.body.position.x, self.body.position.y
+                self.rect.center = self.body.position.x, self.body.position.y
 
 
 class Player(pg.sprite.Sprite):
@@ -64,6 +72,7 @@ class Player(pg.sprite.Sprite):
         self.image = self.sheet.subsurface(self.sheet.get_clip())
 
         self.rect = self.image.get_rect()
+        self.rect = self.rect.inflate(-10, 0)
 
         # set up variables for animation
         self.frame_count = 0
@@ -76,14 +85,14 @@ class Player(pg.sprite.Sprite):
 
         self.fixture = self.body.CreateFixture(shape=b2PolygonShape(box=(frame_width / 2, frame_height / 2)),
                                                friction=.5,
-                                               restitution=.5,
-                                               density=1)
+                                               restitution=0,
+                                               density=.3)
 
         self.is_moving = False
         self.on_ground = False
         self.direction = ""
 
-        self.speed = 550
+        self.speed = 500
         self.jumpForce = -80
 
     def update(self, dt):

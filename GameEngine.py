@@ -20,7 +20,6 @@ class Camera:
         y = -target.rect.y + int(screen.get_height() / 2)
         self.rect = pg.Rect(x, y, self.rect.width, self.rect.height)
 
-
 pg.init()
 
 mixer.init()
@@ -39,7 +38,7 @@ player = Player(50, 150, 32, 64, world)
 gamer = pg.sprite.Group()
 gamer.add(player)
 
-ball = Ball(world, 150, 700, 30)
+ball = Ball(world, 275, -450, 30)
 # baller = pg.sprite.Group()
 # baller.add(ball)
 
@@ -57,7 +56,7 @@ phy_for_ball = pg.sprite.Group()
 mixer.music.load('music.mp3')
 
 # Play the music on loop
-mixer.music.play(-1)
+# mixer.music.play(-1)
 
 for layer in tiled_map.layers:
     if layer.name in ('Physical for player and ball', 'physical for player'):
@@ -132,6 +131,16 @@ while running:
     else:
         player.on_ground = False
 
+    for tile in phy_for_ball:
+        if tile.image != 0:
+            if ball.rect.colliderect(tile.rect):
+                ball.on_ground = True
+                print(ball.on_ground)
+                break
+    else:
+        ball.on_ground = False
+        print(ball.on_ground)
+
     for tile in win_group:
         if tile.image != 0:
             if player.rect.colliderect(tile.rect):
@@ -147,18 +156,13 @@ while running:
     for tile in start_group:
         if tile.image != 0:
             if player.rect.colliderect(tile.rect):
-                pickup = True
+                ball.roll = True
+                mixer.music.play(-1)
                 print("better run")
 
-    for tile in phy_for_ball:
-        if tile.image != 0:
-            if ball.rect.colliderect(tile.rect):
-                ball.on_ground = True
-                print(ball.on_ground)
-                break
-    else:
-        ball.on_ground = False
-        print(ball.on_ground)
+    if player.rect.colliderect(ball.rect):
+        print("you got crushed")
+        pg.quit()
 
     dt = clock.tick(60) / 1000.0
     world.Step(dt, 6, 2)
@@ -182,14 +186,13 @@ while running:
     for tile in lose_group:
         if tile.image != 0:
             screen.blit(tile.image, (tile.rect.x - camera_x, tile.rect.y - camera_y))
-    if pickup == False:
+    if ball.roll == False:
         for tile in start_group:
             if tile.image != 0:
                 screen.blit(tile.image, (tile.rect.x - camera_x, tile.rect.y - camera_y))
 
     screen.blit(player.image, (player.rect.x - camera_x, player.rect.y - camera_y))
-
-    ball.draw(screen, screen.get_height())
+    ball.draw(screen, camera_x, camera_y)
 
     pg.display.update()
     pg.display.flip()
