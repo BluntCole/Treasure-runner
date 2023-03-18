@@ -1,3 +1,11 @@
+'''
+@authors Cole Blunt and Liam Mazure
+@version 3.18.2023
+
+@description A pygame that uses box2d physics and pytmx for level building,
+the user is a player that picks up treasure and has to make it  to the bottom of the temple safely
+'''
+
 import pygame as pg
 from pygame import mixer
 from Box2D import *
@@ -6,7 +14,6 @@ import os
 from Bodies import Player
 from Bodies import Tile
 from Bodies import Ball
-
 
 class Camera:
     def __init__(self, width, height):
